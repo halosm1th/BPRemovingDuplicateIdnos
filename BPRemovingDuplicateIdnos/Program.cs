@@ -68,6 +68,7 @@ static List<(XMLDataEntry m1, XMLDataEntry m2)> FindMatchingBPEntries(List<XMLDa
         if ((xmlDataEntries[i].HasBPNum && xmlDataEntries[i + 1].HasBPNum)
             && (xmlDataEntries[i].BPNumber == xmlDataEntries[i + 1].BPNumber))
         {
+            Console.WriteLine($"Found match in {xmlDataEntries[i].PNNumber} and {xmlDataEntries[i+1].PNNumber}");
             matches.Add(new ValueTuple<XMLDataEntry, XMLDataEntry>(xmlDataEntries[i],xmlDataEntries[i+1]));
         }
     }
@@ -79,20 +80,21 @@ static int BPNumbAsInt(XMLDataEntry entry)
 {
     if (entry.HasBPNum)
     {
-        if (Int32.TryParse(entry.BPNumber, out var result))
+        var bpNumbCombined = entry.BPNumber.Replace("-", ""); 
+        if (Int32.TryParse(bpNumbCombined, out var result))
         {
             return result;
         }
         else
         {
-            Console.WriteLine($"Error entry {entry.PNNumber} has no BP Number");
+            //Console.WriteLine($"Error entry {entry.PNNumber} has an invalid BP Number {entry.BPNumber}");
             return int.MaxValue;
         }
         
     }
     else
     {
-        Console.WriteLine($"Error entry {entry.PNNumber} has no BP Number");
+        //Console.WriteLine($"Error entry {entry.PNNumber} has no BP Number");
         return int.MaxValue;
     }
 }
