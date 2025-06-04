@@ -20,7 +20,24 @@ var comparedMatches = CompareMatchingEntries(matchingEntries);
 
 foreach (var entry in comparedMatches)
 {
-    Console.WriteLine($"Found a troubling match between A: {entry.LevelA.PNNumber} && {entry.LevelM.PNNumber}");
+    var strength = entry.LevelA.GetMatchStrength(entry.LevelM);
+    var fg = Console.ForegroundColor;
+    if (strength >= 9)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+    }else if (strength == 8)
+    {
+        Console.ForegroundColor = ConsoleColor.Magenta;
+    }else if (strength == 7)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+    }else if (strength == 6)
+    {
+        Console.ForegroundColor = ConsoleColor.Blue;
+    }
+    Console.WriteLine($"Found a troubling match between A: {entry.LevelA.PNNumber} & M: {entry.LevelM.PNNumber}. " +
+                      $"Match Level (M compared to A): ({strength})");
+    Console.ForegroundColor = fg;
 }
 
 //TODO process what happens once the match has been found.

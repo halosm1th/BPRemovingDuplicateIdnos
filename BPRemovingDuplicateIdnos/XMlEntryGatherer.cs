@@ -77,7 +77,7 @@ public class XMLEntryGatherer
             }
 
             if (parts[0] == "title" && node.LocalName == "title" &&
-                node.OuterXml.Contains($"type=\"{parts[1]}\""))
+                (node.OuterXml.Contains($"level=\"a\"") ||node.OuterXml.Contains($"level=\"m\"")) )
             {
                 AttributeSetters[key](node, entry);
                 break;
