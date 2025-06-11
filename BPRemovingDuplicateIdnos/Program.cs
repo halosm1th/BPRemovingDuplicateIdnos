@@ -1,169 +1,276 @@
 ﻿// See https://aka.ms/new-console-template for more information
-
-using System.Diagnostics;
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.IO;using System.Diagnostics;
+using System.Xml;
+using System.Xml.Linq;
 using DefaultNamespace;
 
-Console.WriteLine("Staring program");
-
-Console.WriteLine("Setting xml path");
-var xmlFilePath = SetXMLFilepath();
-
-Console.WriteLine("Creating Logger");
-var logger = new Logger();
-
-Console.WriteLine("Gathering XML files");
-var xmlFileGatherer = new XMLEntryGatherer(xmlFilePath, logger);
-var entries = xmlFileGatherer.GatherEntries();
-var matchingEntries = FindMatchingBPEntries(entries);
-
-var comparedMatches = CompareMatchingEntries(matchingEntries);
-
-foreach (var entry in comparedMatches)
+class BPRemovingDuplicates
 {
-    var strength = entry.LevelA.GetMatchStrength(entry.LevelM);
-    var fg = Console.ForegroundColor;
-    if (strength >= 9)
+    private static Logger logger;
+    public static void Main(string[] args)
     {
-        Console.ForegroundColor = ConsoleColor.Red;
-    }else if (strength == 8)
-    {
-        Console.ForegroundColor = ConsoleColor.Magenta;
-    }else if (strength == 7)
-    {
-        Console.ForegroundColor = ConsoleColor.Yellow;
-    }else if (strength == 6)
-    {
-        Console.ForegroundColor = ConsoleColor.Blue;
-    }
-    Console.WriteLine($"Found a troubling match between A: {entry.LevelA.PNNumber} & M: {entry.LevelM.PNNumber}. " +
-                      $"Match Level (M compared to A): ({strength})");
-    Console.ForegroundColor = fg;
-}
+        Console.WriteLine("Staring program");
+        Console.WriteLine("Creating Logger");
+        logger = new Logger();
+        logger.Log("I, the logger, have come into being.");
 
-//TODO process what happens once the match has been found.
+        Console.WriteLine("Setting xml path");
+        logger.Log("Setting xmlPath");
+        var xmlFilePath = SetXMLFilepath();
 
 
-static List<(XMLDataEntry LevelA, XMLDataEntry LevelM)> CompareMatchingEntries(
-    List<(XMLDataEntry m1, XMLDataEntry m2)> matchingEntries)
-{
-    var entriesWeAreConcernedWith = new List<(XMLDataEntry LevelA, XMLDataEntry LevelM)>();
-
-    foreach (var entry in matchingEntries)
-    {
-        XMLDataEntry? a = null;
-        XMLDataEntry? m = null;
+        Console.WriteLine("Gathering XML files");
+        logger.Log("Creating and gathering xml entries.");
+        var xmlFileGatherer = new XMLEntryGatherer(xmlFilePath, logger);
+        var entries = xmlFileGatherer.GatherEntries();
         
-        if(entry.m1.TitleLevel == "a") a = entry.m1;
-        else if (entry.m2.TitleLevel == "a") a = entry.m2;
+        logger.Log("Collecting matching XMl entries from gathered entries.");
+        var matchingEntries = FindMatchingBPEntries(entries);
+        logger.Log($"Found {matchingEntries.Count} matching entries.");
         
-        if(entry.m1.TitleLevel == "m") m = entry.m1;
-        else if (entry.m2.TitleLevel == "m") m = entry.m2;
+        logger.Log("Comparing matching entries to one another to find a/m title pairs.");
+        var comparedMatches = CompareMatchingEntries(matchingEntries);
+        logger.Log($"Found {comparedMatches.Count} entries to compare.");
 
-        if (a != null && m != null)
-        {
-            entriesWeAreConcernedWith.Add(new ValueTuple<XMLDataEntry, XMLDataEntry>(a,m));
-        }
+        logger.Log("Processing Copmarisons");
+        ProcessComparisons(comparedMatches);
+
     }
-    
-    return entriesWeAreConcernedWith;
-}
 
-static List<(XMLDataEntry m1, XMLDataEntry m2)> FindMatchingBPEntries(List<XMLDataEntry> xmlDataEntries)
-{
-    var matches = new List<(XMLDataEntry m1, XMLDataEntry m2)>();
-    xmlDataEntries.Sort(delegate(XMLDataEntry x, XMLDataEntry y)
-                  {
-                      if(BPNumbAsInt(x) > BPNumbAsInt(y)) return 1;
-                      if (BPNumbAsInt(x) < BPNumbAsInt(y)) return -1;
-                      if (BPNumbAsInt(x) == BPNumbAsInt(y)) return 0;
-                      return 0;
-                  });
-
-    for (int i = 0; i < xmlDataEntries.Count; i++)
+    private static void ProcessComparisons(List<(XMLDataEntry LevelA, XMLDataEntry LevelM)> comparedMatches)
     {
-        if (i + 1 == xmlDataEntries.Count) break;
-        if ((xmlDataEntries[i].HasBPNum && xmlDataEntries[i + 1].HasBPNum)
-            && (xmlDataEntries[i].BPNumber == xmlDataEntries[i + 1].BPNumber))
+        logger.LogProcessingInfo($"Processing {comparedMatches.Count} comparisons.");
+        Console.WriteLine($"Handling {comparedMatches.Count} comparisons.");
+        if (comparedMatches.Count > 0)
         {
-            Console.WriteLine($"Found match in {xmlDataEntries[i].PNNumber} and {xmlDataEntries[i+1].PNNumber}");
-            matches.Add(new ValueTuple<XMLDataEntry, XMLDataEntry>(xmlDataEntries[i],xmlDataEntries[i+1]));
+            logger.LogProcessingInfo("Starting XmlUIComparer");
+            var xmlUI = new XmlComparerUI();
+            
+            foreach (var entry in comparedMatches)
+            {
+                logger.LogProcessingInfo($"Running XMLUIComparer to check {entry.LevelA.PNNumber} against {entry.LevelM.PNNumber}");
+                var entryToDelete = xmlUI.Run(entry.LevelA, entry.LevelM);
+                
+                var text = entryToDelete != null ? entryToDelete.PNNumber : "Neither";
+                Console.WriteLine($"Finished comparision. File to delete segs of is: {text}");
+                logger.LogProcessingInfo($"Finished comparision. File to delete segs of is: {text}");
+                
+                logger.LogProcessingInfo("Moving to delete segs.");
+                DeleteSegsOnFile(entryToDelete);
+                logger.LogProcessingInfo("Segs deleted.");
+            }
         }
     }
 
-    return matches;
-}
 
-static int BPNumbAsInt(XMLDataEntry entry)
-{
-    if (entry.HasBPNum)
+    static void DeleteSegsOnFile(XMLDataEntry? xmlDataEntry)
     {
-        var bpNumbCombined = entry.BPNumber.Replace("-", ""); 
-        if (Int32.TryParse(bpNumbCombined, out var result))
+        if (xmlDataEntry == null) return;
+        logger.LogProcessingInfo($"Deleting the segs on the file {xmlDataEntry.PNFileName}");
+        
+        var file = new XmlDocument();
+
+        // Create namespace manager
+        var nsManager = new XmlNamespaceManager(file.NameTable);
+        nsManager.AddNamespace("tei", "http://www.tei-c.org/ns/1.0");
+
+        Console.WriteLine("Loading file");
+        logger.LogProcessingInfo("Loading file.");
+        
+        file.Load(xmlDataEntry.PNFileName);
+        
+        var root = file.DocumentElement;
+        if (root == null) throw new FileNotFoundException("Error finding file to delete segs from");
+        
+        var filename = xmlDataEntry.PNFileName;
+        Console.WriteLine($"File {filename} loaded. Now finding segs to remove.");
+        logger.LogProcessingInfo($"File {filename} loaded. Now finding segs to remove.");
+
+
+        var name = root.SelectSingleNode("//tei:seg[@subtype='nom']", nsManager);
+        var idno = root.SelectSingleNode("//tei:idno[@type='bp']", nsManager);
+        var index = root.SelectSingleNode("//tei:seg[@subtype='index']", nsManager);
+        var indexBis = root.SelectSingleNode("//tei:seg[@subtype='indexBis']", nsManager);
+        var title = root.SelectSingleNode("//tei:seg[@subtype='titre']", nsManager);
+        var publisher = root.SelectSingleNode("//tei:seg[@subtype='publication']", nsManager);
+        var resume = root.SelectSingleNode("//tei:seg[@subtype='resume']", nsManager);
+        var sbandSeg = root.SelectSingleNode("//tei:seg[@subtype='sbSeg']", nsManager);
+        var cr = root.SelectSingleNode("//tei:seg[@subtype='cr']", nsManager);
+        var internet = root.SelectSingleNode("//tei:seg[@subtype='internet']", nsManager);
+
+        RemoveItem(root, name, "name", filename);
+        RemoveItem(root, idno, "idno bp", filename);
+        RemoveItem(root, index, "index", filename);
+        RemoveItem(root, indexBis, "indexBis", filename);
+        RemoveItem(root, title, "title", filename);
+        RemoveItem(root, publisher, "publisher", filename);
+        RemoveItem(root, resume, "resume", filename);
+        RemoveItem(root, sbandSeg, "sbandSeg", filename);
+        RemoveItem(root, cr, "cr", filename);
+        RemoveItem(root, internet, "internet", filename);
+
+        Console.WriteLine("finished updating selected file, saving.");
+        logger.LogProcessingInfo($"Finished updating {xmlDataEntry.PNFileName}.");
+        file.Save(xmlDataEntry.PNFileName);
+        logger.LogProcessingInfo($"Saved updated file {xmlDataEntry.PNFileName}.");
+        Console.WriteLine($"Saved updated file {xmlDataEntry.PNFileName}.");
+    }
+
+    static void RemoveItem(XmlElement root, XmlNode? childNode, string name, string fileName)
+    {
+        if (childNode != null)
         {
-            return result;
+            logger.LogProcessingInfo($"Trying to remove {name} from {fileName}.");
+            root.RemoveChild(childNode);
+            Console.WriteLine($"Removed {name} from {fileName}.");
+            logger.LogProcessingInfo($"Removed {name} from {fileName}.");}
+        else
+        {
+            logger.LogProcessingInfo($"No node to delete with {name} in {fileName}.");
+        }
+    }
+
+    static List<(XMLDataEntry LevelA, XMLDataEntry LevelM)> CompareMatchingEntries(
+        List<(XMLDataEntry m1, XMLDataEntry m2)> matchingEntries)
+    {
+        var entriesWeAreConcernedWith = new List<(XMLDataEntry LevelA, XMLDataEntry LevelM)>();
+
+        foreach (var entry in matchingEntries)
+        {
+            XMLDataEntry? a = null;
+            XMLDataEntry? m = null;
+
+            if (entry.m1.TitleLevel == "a") a = entry.m1;
+            else if (entry.m2.TitleLevel == "a") a = entry.m2;
+
+            if (entry.m1.TitleLevel == "m") m = entry.m1;
+            else if (entry.m2.TitleLevel == "m") m = entry.m2;
+
+            if (a != null && m != null)
+            {
+                entriesWeAreConcernedWith.Add(new ValueTuple<XMLDataEntry, XMLDataEntry>(a, m));
+                logger.LogProcessingInfo($"Matching entry {entry.m1.TitleLevel} with {entry.m2.TitleLevel}. ");
+            }
+        }
+
+        return entriesWeAreConcernedWith;
+    }
+
+    static List<(XMLDataEntry m1, XMLDataEntry m2)> FindMatchingBPEntries(List<XMLDataEntry> xmlDataEntries)
+    {
+        var matches = new List<(XMLDataEntry m1, XMLDataEntry m2)>();
+        xmlDataEntries.Sort(delegate(XMLDataEntry x, XMLDataEntry y)
+        {
+            if (BPNumbAsInt(x) > BPNumbAsInt(y)) return 1;
+            if (BPNumbAsInt(x) < BPNumbAsInt(y)) return -1;
+            if (BPNumbAsInt(x) == BPNumbAsInt(y)) return 0;
+            return 0;
+        });
+
+        for (int i = 0; i < xmlDataEntries.Count; i++)
+        {
+            if (i + 1 == xmlDataEntries.Count) break;
+            if ((xmlDataEntries[i].HasBPNum && xmlDataEntries[i + 1].HasBPNum)
+                && (xmlDataEntries[i].BPNumber == xmlDataEntries[i + 1].BPNumber))
+            {
+                Console.WriteLine($"Found match in {xmlDataEntries[i].PNNumber} and {xmlDataEntries[i + 1].PNNumber}");
+                logger.LogProcessingInfo($"Found match in {xmlDataEntries[i].PNNumber} and {xmlDataEntries[i + 1].PNNumber}");
+                matches.Add(new ValueTuple<XMLDataEntry, XMLDataEntry>(xmlDataEntries[i], xmlDataEntries[i + 1]));
+            }
+        }
+
+        return matches;
+    }
+
+    static int BPNumbAsInt(XMLDataEntry entry)
+    {
+        if (entry.HasBPNum)
+        {
+            var bpNumbCombined = entry.BPNumber.Replace("-", "");
+            if (Int32.TryParse(bpNumbCombined, out var result))
+            {
+                return result;
+            }
+            else
+            {
+                //Console.WriteLine($"Error entry {entry.PNNumber} has an invalid BP Number {entry.BPNumber}");
+                return int.MaxValue;
+            }
+
         }
         else
         {
-            //Console.WriteLine($"Error entry {entry.PNNumber} has an invalid BP Number {entry.BPNumber}");
+            //Console.WriteLine($"Error entry {entry.PNNumber} has no BP Number");
             return int.MaxValue;
         }
+    }
+
+    static string SetXMLFilepath()
+    {
         
-    }
-    else
-    {
-        //Console.WriteLine($"Error entry {entry.PNNumber} has no BP Number");
-        return int.MaxValue;
-    }
-}
+        var currnetDir = Directory.GetCurrentDirectory();
+        logger.LogProcessingInfo($"Current dir: {currnetDir}");
+        var idpDataDir = SearchForIDPDataDir(currnetDir);
+        var biblioDir = GetBiblioDir(idpDataDir);
 
-static string SetXMLFilepath()
-{
-    var currnetDir = Directory.GetCurrentDirectory();
-    var idpDataDir = SearchForIDPDataDir(currnetDir);
-    var biblioDir = GetBiblioDir(idpDataDir);
-    
-    return biblioDir;
-}
+        return biblioDir;
+    }
 
 
-static string GetBiblioDir(string? idpDataDir)
-{
-    var dirs = Directory.GetDirectories(idpDataDir);
-    if (dirs.Any(x => x.ToLower().Contains("biblio")))
+    static string GetBiblioDir(string? idpDataDir)
     {
-        return dirs.First(x => x.ToLower().Contains("biblio"));
-    }
-    else
-    {
-        throw new DirectoryNotFoundException($"Could not find Biblio directory in: {idpDataDir}");
-    }
-}
-
-static string SearchForIDPDataDir(string startPath)
-{
-    var dirs = Directory.GetDirectories(startPath);
-    if (dirs.Length > 0)
-    {
-        if (dirs.Any(x => x.Contains("idp.data")))
+        logger.LogProcessingInfo("Getting biblioDirectory");
+        
+        var dirs = Directory.GetDirectories(idpDataDir);
+        if (dirs.Any(x => x.ToLower().Contains("biblio")))
         {
-            var idpDir = dirs.First(x => x.Contains("idp.data"));
-            
-            return idpDir;
-        } else if (startPath == "C:/" || startPath == "/")
-        {
-            throw new DirectoryNotFoundException("Could not find IDPData directory");
+            var dir = dirs.First(x => x.ToLower().Contains("biblio"));
+            logger.LogProcessingInfo($"Found directory: {dir}");
+            return dir;
         }
         else
         {
-            return (SearchForIDPDataDir(Directory.GetParent(startPath).FullName)); 
+            var error = new DirectoryNotFoundException($"Could not find Biblio directory in: {idpDataDir}");
+            logger.LogProcessingInfo("could not find biblio directory");
+            logger.LogError("Could not find biblio directory, make sure its in the idp.data directory", error);
+            throw error;
         }
     }
-    else
-    {
-        return (SearchForIDPDataDir(Directory.GetParent(startPath).FullName)); 
-    }
 
-    throw new DirectoryNotFoundException("Could not find IDPData directory");
+    static string SearchForIDPDataDir(string startPath)
+    {
+        logger.LogProcessingInfo("Searching for IPDDataDir");
+        var dirs = Directory.GetDirectories(startPath);
+        if (dirs.Length > 0)
+        {
+            if (dirs.Any(x => x.Contains("idp.data")))
+            {
+                var idpDir = dirs.First(x => x.Contains("idp.data"));
+                logger.LogProcessingInfo($"Found IDPDATA directory: {idpDir}");
+                return idpDir;
+            }
+            else if (startPath == "C:/" || startPath == "/")
+            {
+                var error = new DirectoryNotFoundException("Could not find IDPData directory");
+                logger.LogProcessingInfo("Could not find IDPDir.");
+                logger.LogError("Error in finding idpdata directory. Please make sure that the directory is one level above hte folder where I am located.!", error);
+                throw error;
+            }
+            else
+            {
+                return (SearchForIDPDataDir(Directory.GetParent(startPath).FullName));
+            }
+        }
+        else
+        {
+            return (SearchForIDPDataDir(Directory.GetParent(startPath).FullName));
+        }
+
+        throw new DirectoryNotFoundException("Could not find IDPData directory");
+    }
 }
 
 
