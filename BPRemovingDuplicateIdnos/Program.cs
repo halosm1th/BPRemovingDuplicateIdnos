@@ -90,10 +90,10 @@ class BPRemovingDuplicates
         logger.LogProcessingInfo($"File {filename} loaded. Now finding segs to remove.");
 
 
-        var name = root.SelectSingleNode("//tei:seg[@subtype='nom']", nsManager);
-        var idno = root.SelectSingleNode("//tei:idno[@type='bp']", nsManager);
-        var idnoOldBP = root.SelectSingleNode("//tei:idno[@type='bp_old']", nsManager);
-        var index = root.SelectSingleNode("//tei:seg[@subtype='index']", nsManager);
+        var name = root.SelectSingleNode("//tei:seg[@subtype='nom'][@resp='#BP']", nsManager);
+        var idno = root.SelectSingleNode("//tei:idno[@type='bp'][@resp='#BP']", nsManager);
+        var idnoOldBP = root.SelectSingleNode("//tei:idno[@type='bp_old'][@resp='#BP']", nsManager);
+        var index = root.SelectSingleNode("//tei:seg[@subtype='index'][@resp='#BP']", nsManager);
         var indexBis = root.SelectSingleNode("//tei:seg[@subtype='indexBis']", nsManager);
         var title = root.SelectSingleNode("//tei:seg[@subtype='titre']", nsManager);
         var publisher = root.SelectSingleNode("//tei:seg[@subtype='publication']", nsManager);
@@ -101,18 +101,22 @@ class BPRemovingDuplicates
         var sbandSeg = root.SelectSingleNode("//tei:seg[@subtype='sbSeg']", nsManager);
         var cr = root.SelectSingleNode("//tei:seg[@subtype='cr']", nsManager);
         var internet = root.SelectSingleNode("//tei:seg[@subtype='internet']", nsManager);
+        var note = root.SelectSingleNode("//tei:note[@resp='#BP']", nsManager);
 
         RemoveItem(root, name, "name", filename);
         RemoveItem(root, idno, "idno bp", filename);
-        RemoveItem(root, idno, "idno bp_old", filename);
+        RemoveItem(root, idnoOldBP, "idno bp_old", filename);
         RemoveItem(root, index, "index", filename);
         RemoveItem(root, indexBis, "indexBis", filename);
         RemoveItem(root, title, "title", filename);
         RemoveItem(root, publisher, "publisher", filename);
+        RemoveItem(root, note, "note", filename);
         RemoveItem(root, resume, "resume", filename);
         RemoveItem(root, sbandSeg, "sbandSeg", filename);
         RemoveItem(root, cr, "cr", filename);
         RemoveItem(root, internet, "internet", filename);
+        logger.LogProcessingInfo($"Removed segs from {filename}");
+        logger.Log($"Removed segs from {filename}");
 
         Console.WriteLine("finished updating selected file, saving.");
         logger.LogProcessingInfo($"Finished updating {xmlDataEntry.PNFileName}.");
@@ -125,10 +129,10 @@ class BPRemovingDuplicates
     {
         if (childNode != null)
         {
-            logger.LogProcessingInfo($"Trying to remove {name} from {fileName}.");
+            logger.LogProcessingInfo($"Trying to remove {name} from {Path.GetFileName(fileName)}.");
             root.RemoveChild(childNode);
-            Console.WriteLine($"Removed {name} from {fileName}.");
-            logger.LogProcessingInfo($"Removed {name} from {fileName}.");}
+            Console.WriteLine($"Removed {name} from {Path.GetFileName(fileName)}.");
+            logger.LogProcessingInfo($"Removed {name} from {Path.GetFileName(fileName)}.");}
         else
         {
             logger.LogProcessingInfo($"No node to delete with {name} in {fileName}.");
@@ -279,7 +283,6 @@ class BPRemovingDuplicates
 
 //Easier if it goes up a step to parent directory and down a step into idp
 //WHen going to delete, be more specific, have segs with a resp="#bp" flag.
-//Add to be deleted: if there is an idno type="bp_old" delete that if it exists.
 //If there is a note element and the resp="BP" or resp="#BP" when its pulled from resume,the N attribute doesn't matter.
 
 //For the logging segs removed from (filename)
