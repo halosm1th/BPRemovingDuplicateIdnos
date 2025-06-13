@@ -52,7 +52,7 @@ class BPRemovingDuplicates
             foreach (var entry in comparedMatches)
             {
                 logger.LogProcessingInfo($"Running XMLUIComparer to check {entry.LevelA.PNNumber} against {entry.LevelM.PNNumber}");
-                var entryToDelete = xmlUI.Run(entry.LevelA, entry.LevelM);
+                var entryToDelete = xmlUI.Run(entry.LevelA, entry.LevelM, logger);
                 
                 var text = entryToDelete != null ? entryToDelete.PNNumber : "Neither";
                 Console.WriteLine($"Finished comparision. File to delete segs of is: {text}");
@@ -272,19 +272,3 @@ class BPRemovingDuplicates
         throw new DirectoryNotFoundException("Could not find IDPData directory");
     }
 }
-
-
-//TODO goals/objective
-/*
-nice to be able to see both version fo the xml side by side, with A on the left, and M on the right
-Most frequent command is delete segs from one or the other (from A, or from M version based on title level)
-And then have the segs actually be deleted, resaving them
-not just hte segs to delete, wil lalso be the ntoe (resp="#bp")
-highlight overlaps in green
-
-commands:
-ignore and move on to next
-second command is delete segs, and if selected, we should be asked from which version
-are you sure, yes, and then it deletes and immeaditely should write to disk
-and because its git, will see changes, can diff them from git. Write changes directly to disk because git is the safety net
-*/

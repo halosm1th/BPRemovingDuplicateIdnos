@@ -147,24 +147,16 @@ public class BPDataEntry
                $"{Resume ?? ""} {Title ?? ""} {Index ?? ""} {IndexBis ?? ""} " +
                $"{No ?? ""} {CR ?? ""} {BPNumber ?? ""} {SBandSEG ?? ""}";
     }
-
-    public string ToXML()
+    
+    public string ToDisplayString()
     {
-        var sb = new StringBuilder();
-        sb.Append($"<idno type=\"bp\">{BPNumber}</idno>\n");
-        if (_index != null) sb.Append($"<seg type=\"original\" subtype=\"index\" resp=\"#BP\">{_index}</seg>\n");
-        if (IndexBis != null) sb.Append($"<seg type=\"original\" subtype=\"indexBis\" resp=\"#BP\">{IndexBis}</seg>\n");
-        if (_title != null) sb.Append($"<seg type=\"original\" subtype=\"titre\" resp=\"#BP\">{_title}</seg>\n");
-        if (SBandSEG != null) sb.Append($"<seg type=\"original\" subtype=\"SBandSeg\" resp=\"#BP\">{SBandSEG}</seg>\n");
-        if (No != null) sb.Append($"<seg type=\"original\" subtype=\"No\" resp=\"#BP\">{No}</seg>\n");
-        if (annee != null) sb.Append($"<seg type=\"original\" subtype=\"annee\" resp=\"#BP\">{annee}</seg>\n");
-        if (Publication != null)
-            sb.Append($"<seg type=\"original\" subtype=\"publication\" resp=\"#BP\">{Publication}</seg>\n");
-        if (_resume != null) sb.Append($"<seg type=\"original\" subtype=\"resume\" resp=\"#BP\">{_resume}</seg>\n");
-        if (CR != null) sb.Append($"<seg type=\"original\" subtype=\"cr\" resp=\"#BP\">{CR}</seg>\n");
-        if (Name != null) sb.Append($"<seg type=\"original\" subtype=\"nom\" resp=\"#BP\">{Name}</seg>\n");
-        if (_internet != null) sb.Append($"<ptr target=\"{_internet}\"\n");
-
-        return sb.ToString();
+        return (HasIndex ? $"Index: {Index ?? "None"}{Environment.NewLine}" : "") +
+               (HasIndexBis ? $"Index Bis: {IndexBis ?? "None"}{Environment.NewLine}" : "") +
+               (HasPublication ? $"Publication: {Publication ?? "None"}{Environment.NewLine}" : "") +
+               (HasResume ? $"Resume: {Resume ?? "None"}{Environment.NewLine}" : "") +
+               (HasTitle ? $"Title: {Title ?? "None"}{Environment.NewLine}" : "") +
+               (HasName ? $"Name: {Name ?? "None"}{Environment.NewLine}" : "")+
+               (HasCR ? $"CR: {CR ?? "None"}{Environment.NewLine}" : "") +
+               (HasSBandSEG ? $"SB & SEG: {SBandSEG ?? "None"}" : "");
     }
 }
