@@ -92,6 +92,7 @@ class BPRemovingDuplicates
 
         var name = root.SelectSingleNode("//tei:seg[@subtype='nom']", nsManager);
         var idno = root.SelectSingleNode("//tei:idno[@type='bp']", nsManager);
+        var idnoOldBP = root.SelectSingleNode("//tei:idno[@type='bp_old']", nsManager);
         var index = root.SelectSingleNode("//tei:seg[@subtype='index']", nsManager);
         var indexBis = root.SelectSingleNode("//tei:seg[@subtype='indexBis']", nsManager);
         var title = root.SelectSingleNode("//tei:seg[@subtype='titre']", nsManager);
@@ -103,6 +104,7 @@ class BPRemovingDuplicates
 
         RemoveItem(root, name, "name", filename);
         RemoveItem(root, idno, "idno bp", filename);
+        RemoveItem(root, idno, "idno bp_old", filename);
         RemoveItem(root, index, "index", filename);
         RemoveItem(root, indexBis, "indexBis", filename);
         RemoveItem(root, title, "title", filename);
@@ -272,3 +274,12 @@ class BPRemovingDuplicates
         throw new DirectoryNotFoundException("Could not find IDPData directory");
     }
 }
+
+
+
+//Easier if it goes up a step to parent directory and down a step into idp
+//WHen going to delete, be more specific, have segs with a resp="#bp" flag.
+//Add to be deleted: if there is an idno type="bp_old" delete that if it exists.
+//If there is a note element and the resp="BP" or resp="#BP" when its pulled from resume,the N attribute doesn't matter.
+
+//For the logging segs removed from (filename)

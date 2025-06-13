@@ -19,7 +19,7 @@ public class Logger
     public Logger()
     {
         // Create logs in the application directory
-        _logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BPtoPNLogs");
+        _logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "REmovingBPDuplicateIdnos");
         _sessionFolder = Path.Combine(_logDirectory, DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
         _logWriters = new Dictionary<string, StreamWriter>();
 
