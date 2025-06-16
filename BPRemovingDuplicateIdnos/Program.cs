@@ -104,7 +104,7 @@ class BPRemovingDuplicates
 
         RemoveItem(root, name, "name", filename);
         RemoveItem(root, idno, "idno bp", filename);
-        RemoveItem(root, idno, "idno bp_old", filename);
+        RemoveItem(root, idnoOldBP, "idno bp_old", filename);
         RemoveItem(root, index, "index", filename);
         RemoveItem(root, indexBis, "indexBis", filename);
         RemoveItem(root, title, "title", filename);
