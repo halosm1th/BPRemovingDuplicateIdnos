@@ -91,8 +91,8 @@ class BPRemovingDuplicates
 
 
         var name = root.SelectSingleNode("//tei:seg[@subtype='nom'][@resp='#BP']", nsManager);
-        var idno = root.SelectSingleNode("//tei:idno[@type='bp'][@resp='#BP']", nsManager);
-        var idnoOldBP = root.SelectSingleNode("//tei:idno[@type='bp_old'][@resp='#BP']", nsManager);
+        var idno = root.SelectSingleNode("//tei:idno[@type='bp']", nsManager);
+        var idnoOldBP = root.SelectSingleNode("//tei:idno[@type='bp_old']", nsManager);
         var index = root.SelectSingleNode("//tei:seg[@subtype='index'][@resp='#BP']", nsManager);
         var indexBis = root.SelectSingleNode("//tei:seg[@subtype='indexBis']", nsManager);
         var title = root.SelectSingleNode("//tei:seg[@subtype='titre']", nsManager);
