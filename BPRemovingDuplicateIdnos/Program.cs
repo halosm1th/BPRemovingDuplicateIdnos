@@ -102,6 +102,7 @@ class BPRemovingDuplicates
         var cr = root.SelectSingleNode("//tei:seg[@subtype='cr']", nsManager);
         var internet = root.SelectSingleNode("//tei:seg[@subtype='internet']", nsManager);
         var note = root.SelectSingleNode("//tei:note[@resp='#BP']", nsManager);
+        var illustration = root.SelectSingleNode("//tei:note[@type='illustration']", nsManager);
 
         RemoveItem(root, name, "name", filename);
         RemoveItem(root, idno, "idno bp", filename);
@@ -115,6 +116,8 @@ class BPRemovingDuplicates
         RemoveItem(root, sbandSeg, "sbandSeg", filename);
         RemoveItem(root, cr, "cr", filename);
         RemoveItem(root, internet, "internet", filename);
+        //RemoveItem(root, illustration, "illustration", filename);
+        
         logger.LogProcessingInfo($"Removed segs from {filename}");
         logger.Log($"Removed segs from {filename}");
 
@@ -286,3 +289,7 @@ class BPRemovingDuplicates
 //If there is a note element and the resp="BP" or resp="#BP" when its pulled from resume,the N attribute doesn't matter.
 
 //For the logging segs removed from (filename)
+
+/*
+Illustration comes from Bp segs note type="illustrsation"
+*/
