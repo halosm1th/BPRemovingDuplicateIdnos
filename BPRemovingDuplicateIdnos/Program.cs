@@ -116,7 +116,20 @@ class BPRemovingDuplicates
         RemoveItem(root, sbandSeg, "sbandSeg", filename);
         RemoveItem(root, cr, "cr", filename);
         RemoveItem(root, internet, "internet", filename);
-        //RemoveItem(root, illustration, "illustration", filename);
+
+        if (illustration != null)
+        {
+            Console.WriteLine($"Entry {xmlDataEntry.PNFileName} has an illustration:\n\t{illustration.InnerXml}.");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Do you want to delete this illustration? (press y to delete)");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            var delete = Console.ReadKey().ToString()?.ToLower();
+            if (delete == "y")
+            {
+                RemoveItem(root, illustration, "illustration", filename); 
+            }
+        }
         
         logger.LogProcessingInfo($"Removed segs from {filename}");
         logger.Log($"Removed segs from {filename}");
