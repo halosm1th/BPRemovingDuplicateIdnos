@@ -122,7 +122,7 @@ class BPRemovingDuplicates
             Console.WriteLine($"Entry {xmlDataEntry.PNFileName} has an illustration:\n\t{illustration.InnerXml}.");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Do you want to delete this illustration? (press y to delete)");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ResetColor();
 
             var delete = Console.ReadKey().ToString()?.ToLower();
             if (delete == "y")
