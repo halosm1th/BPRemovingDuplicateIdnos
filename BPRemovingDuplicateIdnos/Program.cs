@@ -121,10 +121,10 @@ class BPRemovingDuplicates
         {
             Console.WriteLine($"Entry {xmlDataEntry.PNFileName} has an illustration:\n\t{illustration.InnerXml}.");
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Do you want to delete this illustration? (press y to delete)");
+            Console.WriteLine("Do you want to delete this illustration? (Enter y to delete)");
             Console.ResetColor();
 
-            var delete = Console.ReadKey().ToString()?.ToLower();
+            var delete = Console.ReadLine().ToLower();
             if (delete == "y")
             {
                 RemoveItem(root, illustration, "illustration", filename); 
@@ -203,7 +203,8 @@ class BPRemovingDuplicates
                 matches.Add(new ValueTuple<XMLDataEntry, XMLDataEntry>(xmlDataEntries[i], xmlDataEntries[i + 1]));
             }
         }
-
+        
+        
         return matches;
     }
 
