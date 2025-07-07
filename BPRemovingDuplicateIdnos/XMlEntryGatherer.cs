@@ -34,30 +34,40 @@ public class XMLEntryGatherer
 
     private XMLDataEntry GetEntry(string filePath)
     {
-        //logger.LogProcessingInfo($"Getting entry at {filePath}");
-        var entry = new XMLDataEntry(filePath, logger);
-        var doc = new XmlDocument();
-        doc.Load(filePath);
-        //logger.LogProcessingInfo("Entry loaded.");
-
-        //Console.WriteLine($"getting: {filePath}");
-
-        foreach (var rawNode in doc?.DocumentElement?.ChildNodes)
+        try
         {
-            if (rawNode.GetType() == typeof(XmlElement))
-            {
-                var node = ((XmlElement) rawNode);
-                SetEntryAttributes(node, entry);
-            }
-            else
-            {
-                //logger.LogProcessingInfo($"Found a node that is not an element, moving onto {filePath}");
-                Console.WriteLine($"getting: {filePath}");
-            }
-        }
+            //logger.LogProcessingInfo($"Getting entry at {filePath}");
+            var entry = new XMLDataEntry(filePath, logger);
+            var doc = new XmlDocument();
+            doc.Load(filePath);
+            //logger.LogProcessingInfo("Entry loaded.");
 
-        //logger.LogProcessingInfo($"Finished processing entry {entry}");
-        return entry;
+            //Console.WriteLine($"getting: {filePath}");
+
+            foreach (var rawNode in doc?.DocumentElement?.ChildNodes)
+            {
+                if (rawNode.GetType() == typeof(XmlElement))
+                {
+                    var node = ((XmlElement) rawNode);
+                    SetEntryAttributes(node, entry);
+                }
+                else
+                {
+                    //logger.LogProcessingInfo($"Found a node that is not an element, moving onto {filePath}");
+                    Console.WriteLine($"getting: {filePath}");
+                }
+            }
+
+            //logger.LogProcessingInfo($"Finished processing entry {entry}");
+            return entry;
+        }
+        catch (Exception e)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"There an error loading file: {filePath}.\n{e}");
+            Console.ResetColor();
+            throw e;
+        } 
     }
 
     private void SetEntryAttributes(XmlElement node, XMLDataEntry entry)
