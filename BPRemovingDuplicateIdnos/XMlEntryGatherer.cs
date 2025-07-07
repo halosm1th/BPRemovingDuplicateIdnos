@@ -65,6 +65,7 @@ public class XMLEntryGatherer
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"There an error loading file: {filePath}.\n{e}");
+            logger.Log($"There an error loading file: {filePath}.\n{e}");
             Console.ResetColor();
             return null;
         } 
