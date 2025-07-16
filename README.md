@@ -13,13 +13,10 @@ A .NET 9 C# console application to detect and resolve duplicate BP identifiers
 
 ## 🗂️ Folder Layout
 
-```
-text
-
+```markdown
 
 ├─idp.data/
 ├── Biblio
-│
 ├─project-root/
 ├── BPRemovingDuplicateIdnos.sln         ← Visual Studio solution
 ├── BPRemovingDuplicateIdnos/            ← C# console project
