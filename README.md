@@ -14,6 +14,7 @@ A .NET 9 C# console application to detect and resolve duplicate BP identifiers
 ## 🗂️ Folder Layout
 
 ```
+
 ├─idp.data/
 ├── Biblio
 │
