@@ -1,9 +1,9 @@
 ```markdown
 # BPRemovingDuplicateIdnos
 
-A .NET 9 C# console application to detect and resolve duplicate BP identifiers in your PN XML corpus.  It:
+A .NET 9 C# console application to detect and resolve duplicate BP identifiers in your idp.data/Biblio XML corpus.  It:
 
-1. **Discovers** all XML files under your `idp.data/biblio` archive (recursively).  
+1. **Discovers** all XML files under your `idp.data/Biblio` archive (recursively).  
 2. **Extracts** each file’s BP number and other metadata via `XMLEntryGatherer`.  
 3. **Sorts & finds duplicates**—any two files sharing the same BP number, where one file has `title[@level="a"]` and the other has `title[@level="m"]` (as the XSLT that drove the creation of PN Biblio created two files – both an article/chapter as well as the book that contains it – from a single BP fiche, which is the origin of the duplicates).
 4. **Prompts** you (via `XmlComparerUI`) to choose which of the two duplicate entries should have its `seg[@resp="#BP"]` or `note[@resp="#BP"]` elements removed.  
@@ -12,25 +12,29 @@ A .NET 9 C# console application to detect and resolve duplicate BP identifiers
 ---
 
 ## 🗂️ Folder Layout
+The BPRemovingDuplicateIdnos project folder should be a sibling of idp.data in the local directory. 
 
 ```markdown
 
 ├─idp.data/
-├── Biblio
-├─project-root/
-├── BPRemovingDuplicateIdnos.sln         ← Visual Studio solution
-├── BPRemovingDuplicateIdnos/            ← C# console project
-│   ├── BPRemovingDuplicateIdnos.csproj
-│   ├── Program.cs                       ← entry point & orchestration
-│   ├── Logger.cs                        ← simple file‑and‑console logger
-│   ├── XMLEntryGatherer.cs              ← gathers & parses each TEI file
-│   ├── XMLDataEntry.cs                  ← model for parsed TEI fields
-│   ├── XmlComparerUI.cs                 ← console UI for duplicate resolution
-│   └── … (other helpers)
+│   └── Biblio
+└─BPRemovingDuplicateIdnos/            ← C# console project
+    ├── bin/
+    ├── obj/
+    ├── BPDataEntry.cs
+    ├── BPEntryGatherer.cs
+    ├── BPRemovingDuplicateIdnos.sln         ← Visual Studio solution
+    ├── BPRemovingDuplicateIdnos.csproj
+    ├── Program.cs                       ← entry point & orchestration
+    ├── Logger.cs                        ← simple file‑and‑console logger
+    ├── XMLEntryGatherer.cs              ← gathers & parses each TEI file
+    ├── XMLDataEntry.cs                  ← model for parsed TEI fields
+    ├── XmlComparerUI.cs                 ← console UI for duplicate resolution
+    └── … (other helpers)
 
 ```
 
-> The tool locates `idp.data` by walking up from your current directory, then finds the first subdirectory whose name contains “biblio.” :contentReference[oaicite:1]{index=1}
+> The tool locates `idp.data` by walking up from your current directory, then finds the first subdirectory whose name contains “Biblio.” :contentReference[oaicite:1]{index=1}
 
 ---
 
@@ -57,7 +61,7 @@ dotnet run
 
 You’ll see console output:
 
-1. **Current directory** and location of `idp.data` & `biblio`.
+1. **Current directory** and location of `idp.data` & `Biblio`.
 2. **List of duplicate pairs**:
 
    ```
@@ -81,7 +85,7 @@ You’ll see console output:
 * **`SetXMLFilepath()`**
 
   * Starts in your CWD, walks upward to find an `idp.data` directory.
-  * Within that, finds the first subfolder containing “biblio.”
+  * Within that, finds the first subfolder containing “Biblio.”
 * **`XMLEntryGatherer`**
 
   * Recursively reads every `.xml` file.
@@ -104,9 +108,9 @@ You’ll see console output:
 
 ## 🐛 Troubleshooting
 
-* **“Could not find IDPData directory”**
+* **“Could not find idp.data directory”**
 
-  * Ensure you run `dotnet run` one level below an `idp.data` folder.
+  * Ensure you run `dotnet run` from a directory that is sibling to the `idp.data` folder.
 * **No duplicates found**
 
   * All BP numbers are unique—no action needed!
