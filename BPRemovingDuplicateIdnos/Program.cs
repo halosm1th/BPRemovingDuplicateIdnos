@@ -53,20 +53,21 @@ class BPRemovingDuplicates
             {
                 logger.LogProcessingInfo($"Running XMLUIComparer to check {entry.LevelA.PNNumber} against {entry.LevelM.PNNumber}");
                 var entryToDelete = xmlUI.Run(entry.LevelA, entry.LevelM, logger);
+                var spareEntry = entryToDelete == entry.LevelA? entry.LevelM: entry.LevelA;
                 
                 var text = entryToDelete != null ? entryToDelete.PNNumber : "Neither";
                 Console.WriteLine($"Finished comparision. File to delete segs of is: {text}");
                 logger.LogProcessingInfo($"Finished comparision. File to delete segs of is: {text}");
                 
                 logger.LogProcessingInfo("Moving to delete segs.");
-                DeleteSegsOnFile(entryToDelete);
+                DeleteSegsOnFile(entryToDelete, spareEntry);
                 logger.LogProcessingInfo("Segs deleted.");
             }
         }
     }
 
 
-    static void DeleteSegsOnFile(XMLDataEntry? xmlDataEntry)
+    static void DeleteSegsOnFile(XMLDataEntry? xmlDataEntry, XMLDataEntry? otherEntry)
     {
         if (xmlDataEntry == null) return;
         logger.LogProcessingInfo($"Deleting the segs on the file {xmlDataEntry.PNFileName}");
@@ -127,7 +128,14 @@ class BPRemovingDuplicates
             var delete = Console.ReadLine().ToLower();
             if (delete == "y")
             {
-                RemoveItem(root, illustration, "illustration", filename); 
+                RemoveItem(root, illustration, "illustration", filename);
+                var otherDoc = new XmlDocument();
+                otherDoc.Load(otherEntry.PNFileName);
+                var import = otherDoc.ImportNode(illustration.CloneNode(true), true);
+                otherDoc?.DocumentElement?.InsertAfter(import, otherDoc.DocumentElement.LastChild);
+                otherDoc?.Save(otherEntry.PNFileName);
+                Console.WriteLine("added illustration to: {otherEntry.PNFileName}.}");
+                logger.LogProcessingInfo("added illustration to: {otherEntry.PNFileName}.}");
             }
         }
         
