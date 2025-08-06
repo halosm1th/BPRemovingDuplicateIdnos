@@ -130,9 +130,9 @@ public class BPDataEntry
             logger.LogProcessingInfo($"Replacing invalid text in {value ?? ""}");
         }
 
-        value = value?.Replace("&", "&amp;");
-        value = value?.Replace("<", "&lt;");
-        value = value?.Replace(">", "&gt;");
+        value = value?.Replace(" & ", " &amp; ");
+        value = value?.Replace(" < ", " &lt; ");
+        value = value?.Replace(" > ", " &gt; ");
         if (logger != null)
         {
             logger.LogProcessingInfo($"Replaced text resulted in: {value}");
