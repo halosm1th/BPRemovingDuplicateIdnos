@@ -104,6 +104,7 @@ class BPRemovingDuplicates
         var internet = root.SelectSingleNode("//tei:seg[@subtype='internet']", nsManager);
         var note = root.SelectSingleNode("//tei:note[@resp='#BP']", nsManager);
         var illustration = root.SelectSingleNode("//tei:note[@type='illustration']", nsManager);
+        var series = root.SelectSingleNode("//tei:series", nsManager);
 
         RemoveItem(root, name, "name", filename);
         RemoveItem(root, idno, "idno bp", filename);
@@ -118,6 +119,47 @@ class BPRemovingDuplicates
         RemoveItem(root, cr, "cr", filename);
         RemoveItem(root, internet, "internet", filename);
 
+        CheckIfRemoveIllustrationNode(xmlDataEntry, otherEntry, illustration, root, filename);
+        CheckIfRemoveseriesNode(xmlDataEntry, otherEntry, series, root, filename);
+        
+        logger.LogProcessingInfo($"Removed segs from {filename}");
+        logger.Log($"Removed segs from {filename}");
+
+        Console.WriteLine("finished updating selected file, saving.");
+        logger.LogProcessingInfo($"Finished updating {xmlDataEntry.PNFileName}.");
+        file.Save(xmlDataEntry.PNFileName);
+        logger.LogProcessingInfo($"Saved updated file {xmlDataEntry.PNFileName}.");
+        Console.WriteLine($"Saved updated file {xmlDataEntry.PNFileName}.");
+    }
+
+    private static void CheckIfRemoveseriesNode(XMLDataEntry xmlDataEntry, XMLDataEntry? otherEntry,
+        XmlNode? series, XmlElement root, string filename)
+    {
+        if (series != null)
+        {
+            Console.WriteLine($"Entry {xmlDataEntry.PNFileName} has series:\n\t{series.InnerXml}.");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Do you want to delete this series node and its children? (Enter y to delete)");
+            Console.ResetColor();
+
+            var delete = Console.ReadLine().ToLower();
+            if (delete == "y")
+            {
+                RemoveItem(root, series, "illustration", filename);
+                //var otherDoc = new XmlDocument();
+                //otherDoc.Load(otherEntry.PNFileName);
+                //var import = otherDoc.ImportNode(series.CloneNode(true), true);
+                //otherDoc?.DocumentElement?.InsertAfter(import, otherDoc.DocumentElement.LastChild);
+                //otherDoc?.Save(otherEntry.PNFileName);
+                //Console.WriteLine("added illustration to: {otherEntry.PNFileName}.}");
+                //logger.LogProcessingInfo("added illustration to: {otherEntry.PNFileName}.}");
+            }
+        }
+    }
+    
+    private static void CheckIfRemoveIllustrationNode(XMLDataEntry xmlDataEntry, XMLDataEntry? otherEntry,
+        XmlNode? illustration, XmlElement root, string filename)
+    {
         if (illustration != null)
         {
             Console.WriteLine($"Entry {xmlDataEntry.PNFileName} has an illustration:\n\t{illustration.InnerXml}.");
@@ -134,19 +176,10 @@ class BPRemovingDuplicates
                 var import = otherDoc.ImportNode(illustration.CloneNode(true), true);
                 otherDoc?.DocumentElement?.InsertAfter(import, otherDoc.DocumentElement.LastChild);
                 otherDoc?.Save(otherEntry.PNFileName);
-                Console.WriteLine("added illustration to: {otherEntry.PNFileName}.}");
-                logger.LogProcessingInfo("added illustration to: {otherEntry.PNFileName}.}");
+                Console.WriteLine($"added illustration to: {otherEntry.PNFileName}.");
+                logger.LogProcessingInfo($"added illustration to: {otherEntry.PNFileName}.");
             }
         }
-        
-        logger.LogProcessingInfo($"Removed segs from {filename}");
-        logger.Log($"Removed segs from {filename}");
-
-        Console.WriteLine("finished updating selected file, saving.");
-        logger.LogProcessingInfo($"Finished updating {xmlDataEntry.PNFileName}.");
-        file.Save(xmlDataEntry.PNFileName);
-        logger.LogProcessingInfo($"Saved updated file {xmlDataEntry.PNFileName}.");
-        Console.WriteLine($"Saved updated file {xmlDataEntry.PNFileName}.");
     }
 
     static void RemoveItem(XmlElement root, XmlNode? childNode, string name, string fileName)
