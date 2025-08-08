@@ -82,7 +82,7 @@ class BPRemovingDuplicates
         logger.LogProcessingInfo("Loading file.");
         
         file.Load(xmlDataEntry.PNFileName);
-        
+
         var root = file.DocumentElement;
         if (root == null) throw new FileNotFoundException("Error finding file to delete segs from");
         
@@ -104,7 +104,7 @@ class BPRemovingDuplicates
         var internet = root.SelectSingleNode("//tei:seg[@subtype='internet']", nsManager);
         var note = root.SelectSingleNode("//tei:note[@resp='#BP']", nsManager);
         var illustration = root.SelectSingleNode("//tei:note[@type='illustration']", nsManager);
-        var series = root.SelectSingleNode("//tei:series", nsManager);
+
 
         RemoveItem(root, name, "name", filename);
         RemoveItem(root, idno, "idno bp", filename);
@@ -120,8 +120,22 @@ class BPRemovingDuplicates
         RemoveItem(root, internet, "internet", filename);
 
         CheckIfRemoveIllustrationNode(xmlDataEntry, otherEntry, illustration, root, filename);
-        CheckIfRemoveseriesNode(xmlDataEntry, otherEntry, series, root, filename);
-        
+
+        //Dealing with the series element, because its from the other file we need to load the other file
+        //And then once its loaded, we need to check if it has the root node. Then we can load try and find the series
+        //node and if the seris node exists, we can ask about removing it from this file. 
+        if (otherEntry?.TitleLevel == "a")
+        {
+            var otherFile = new XmlDocument();
+            otherFile.Load(otherEntry.PNFileName);
+            var otherRoot = otherFile.DocumentElement;
+            if (otherRoot == null) throw new FileNotFoundException("Error finding file to delete the series node from");
+            Console.WriteLine($"Loaded {xmlDataEntry.PNFileName}, checking for series node.");
+            var series = otherRoot.SelectSingleNode("//tei:series", nsManager);
+            CheckIfRemoveseriesNode(xmlDataEntry, otherEntry, series, otherRoot, otherEntry.PNFileName);
+            otherFile.Save(otherEntry.PNFileName);
+        }
+
         logger.LogProcessingInfo($"Removed segs from {filename}");
         logger.Log($"Removed segs from {filename}");
 
@@ -133,11 +147,11 @@ class BPRemovingDuplicates
     }
 
     private static void CheckIfRemoveseriesNode(XMLDataEntry xmlDataEntry, XMLDataEntry? otherEntry,
-        XmlNode? series, XmlElement root, string filename)
+        XmlNode? series, XmlElement otherRoot, string otherEntryFilename)
     {
         if (series != null)
         {
-            Console.WriteLine($"Entry {xmlDataEntry.PNFileName} has series:\n\t{series.InnerXml}.");
+            Console.WriteLine($"Entry {otherEntry.PNFileName} has series:\n\t{series.InnerXml}.");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Do you want to delete this series node and its children? (Enter y to delete)");
             Console.ResetColor();
@@ -145,7 +159,7 @@ class BPRemovingDuplicates
             var delete = Console.ReadLine().ToLower();
             if (delete == "y")
             {
-                RemoveItem(root, series, "illustration", filename);
+                RemoveItem(otherRoot, series, "series", otherEntryFilename);
                 //var otherDoc = new XmlDocument();
                 //otherDoc.Load(otherEntry.PNFileName);
                 //var import = otherDoc.ImportNode(series.CloneNode(true), true);
