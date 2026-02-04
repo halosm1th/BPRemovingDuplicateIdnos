@@ -3,10 +3,10 @@
 A .NET 9 C# console application to detect and resolve duplicate BP identifiers in your idp.data/Biblio XML corpus.  It:
 
 1. **Discovers** all XML files under your `idp.data/Biblio` archive (recursively).  
-2. **Extracts** each file’s BP number and other metadata via `XMLEntryGatherer`.  
-3. **Sorts & finds duplicates**—any two files sharing the same BP number, where one file has `title[@level="a"]` and the other has `title[@level="m"]` (as the XSLT that drove the creation of PN Biblio created two files – both an article/chapter as well as the book that contains it – from a single BP fiche, which is the origin of the duplicates).
+2. **Extracts** each file’s BP idno and other metadata via `XMLEntryGatherer`.  
+3. **Sorts & finds duplicates**—any two files sharing the same BP idno, where one file has `title[@level="a"]` and the other has `title[@level="m"]` (as the XSLT that drove the creation of PN Biblio created two files – both an article/chapter as well as the book that contains it – from a single BP fiche, which is the origin of the duplicates).
 4. **Prompts** you (via `XmlComparerUI`) to choose which of the two duplicate entries should have its `seg[@resp="#BP"]` or `note[@resp="#BP"]` elements removed.  
-5. **Deletes** the selected segments in the losing file, saves the updated XML, and logs every action.
+5. **Deletes** the selected segments in the chosen file, saves the updated XML, and logs every action.
 
 ---
 
