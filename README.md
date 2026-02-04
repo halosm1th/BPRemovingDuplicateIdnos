@@ -12,7 +12,7 @@ A .NET 9 C# console application to detect and resolve duplicate BP identifiers
 
 ## 🗂️ Folder Layout
 The BPRemovingDuplicateIdnos project folder should be a sibling of idp.data in the local directory. 
-
+```
 ├─idp.data/
 │   └── Biblio
 └─BPRemovingDuplicateIdnos/            ← C# console project
@@ -28,7 +28,7 @@ The BPRemovingDuplicateIdnos project folder should be a sibling of idp.data in t
     ├── XMLDataEntry.cs                  ← model for parsed TEI fields
     ├── XmlComparerUI.cs                 ← console UI for duplicate resolution
     └── … (other helpers)
-
+```
 > The tool locates `idp.data` by walking up from your current directory, then finds the first subdirectory whose name contains “Biblio.” :contentReference[oaicite:1]{index=1}
 
 ---
