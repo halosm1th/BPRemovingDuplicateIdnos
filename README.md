@@ -29,7 +29,7 @@ The BPRemovingDuplicateIdnos project folder should be a sibling of idp.data in t
     ├── XmlComparerUI.cs                 ← console UI for duplicate resolution
     └── … (other helpers)
 ```
-> The tool locates `idp.data` by walking up from your current directory, then finds the first subdirectory whose name contains “Biblio.” :contentReference[oaicite:1]{index=1}
+> The tool locates `idp.data` by walking up from your current directory, then finds the first subdirectory whose name contains “Biblio.”
 
 ---
 
